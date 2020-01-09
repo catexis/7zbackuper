@@ -41,6 +41,7 @@
             this.lblBackupFileName = new System.Windows.Forms.Label();
             this.grpAsService = new System.Windows.Forms.GroupBox();
             this.btnBackupRun = new System.Windows.Forms.Button();
+            this.btnChecksRescan = new System.Windows.Forms.Button();
             this.grpChecks.SuspendLayout();
             this.grpFolders.SuspendLayout();
             this.grpLastBackup.SuspendLayout();
@@ -83,6 +84,7 @@
             // lblCheck7Zip
             // 
             this.lblCheck7Zip.Dock = System.Windows.Forms.DockStyle.Top;
+            this.lblCheck7Zip.ForeColor = System.Drawing.SystemColors.ControlText;
             this.lblCheck7Zip.Location = new System.Drawing.Point(3, 16);
             this.lblCheck7Zip.Margin = new System.Windows.Forms.Padding(5);
             this.lblCheck7Zip.Name = "lblCheck7Zip";
@@ -124,6 +126,7 @@
             this.btnFoldersFrom.TabIndex = 1;
             this.btnFoldersFrom.Text = "From";
             this.btnFoldersFrom.UseVisualStyleBackColor = true;
+            this.btnFoldersFrom.Click += new System.EventHandler(this.btnFoldersFrom_Click);
             // 
             // btnFolders7Zip
             // 
@@ -181,16 +184,27 @@
             // 
             // btnBackupRun
             // 
-            this.btnBackupRun.Location = new System.Drawing.Point(12, 118);
+            this.btnBackupRun.Location = new System.Drawing.Point(12, 149);
             this.btnBackupRun.Name = "btnBackupRun";
-            this.btnBackupRun.Size = new System.Drawing.Size(182, 100);
+            this.btnBackupRun.Size = new System.Drawing.Size(182, 69);
             this.btnBackupRun.TabIndex = 4;
             this.btnBackupRun.Text = "Run backup";
             this.btnBackupRun.UseVisualStyleBackColor = true;
             // 
+            // btnChecksRescan
+            // 
+            this.btnChecksRescan.Location = new System.Drawing.Point(12, 118);
+            this.btnChecksRescan.Name = "btnChecksRescan";
+            this.btnChecksRescan.Size = new System.Drawing.Size(182, 25);
+            this.btnChecksRescan.TabIndex = 5;
+            this.btnChecksRescan.Text = "Rescan checks";
+            this.btnChecksRescan.UseVisualStyleBackColor = true;
+            this.btnChecksRescan.Click += new System.EventHandler(this.btnChecksRescan_Click);
+            // 
             // MainForm
             // 
             this.ClientSize = new System.Drawing.Size(399, 333);
+            this.Controls.Add(this.btnChecksRescan);
             this.Controls.Add(this.btnBackupRun);
             this.Controls.Add(this.grpAsService);
             this.Controls.Add(this.grpLastBackup);
@@ -221,6 +235,7 @@
         private System.Windows.Forms.Label lblBackupFileName;
         private System.Windows.Forms.GroupBox grpAsService;
         private System.Windows.Forms.Button btnBackupRun;
+        private System.Windows.Forms.Button btnChecksRescan;
     }
 }
 
