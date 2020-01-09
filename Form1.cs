@@ -14,9 +14,6 @@ namespace _004_backuper
 {
     public partial class MainForm : Form
     {
-        bool flagPathZip = false;
-        bool flagPathFrom = false;
-        bool flagPathTo = false;
         IniData iniData = new IniData();
 
         public MainForm()
@@ -81,11 +78,9 @@ namespace _004_backuper
             if ( System.IO.File.Exists( data["folders"]["7zip"] ) ) {
                 lblCheck7Zip.Text = "✔ 7Zip is ok";
                 lblCheck7Zip.ForeColor = System.Drawing.Color.Green;
-                this.flagPathZip = true;
             } else {
                 lblCheck7Zip.Text = "✘ Set path to 7Zip";
                 lblCheck7Zip.ForeColor = System.Drawing.Color.Red;
-                this.flagPathZip = false;
             }
         }
 
@@ -96,13 +91,11 @@ namespace _004_backuper
             {
                 lblCheckFolderFrom.Text = "✔ Folder 'from' is ok";
                 lblCheckFolderFrom.ForeColor = System.Drawing.Color.Green;
-                this.flagPathFrom = true;
             }
             else
             {
                 lblCheckFolderFrom.Text = "✘ Set path for backup";
                 lblCheckFolderFrom.ForeColor = System.Drawing.Color.Red;
-                this.flagPathFrom = false;
             }
         }
 
@@ -113,53 +106,176 @@ namespace _004_backuper
             {
                 lblCheckFolderTo.Text = "✔ Folder 'to' is ok";
                 lblCheckFolderTo.ForeColor = System.Drawing.Color.Green;
-                this.flagPathTo = true;
             }
             else
             {
                 lblCheckFolderTo.Text = "✘ Set path to backup";
                 lblCheckFolderTo.ForeColor = System.Drawing.Color.Red;
-                this.flagPathTo = false;
             }
         }
 
-        private void btnFolders7Zip_Click(object sender, EventArgs e)
+        private void btnFolders7ZipOpen_Click(object sender, EventArgs e)
         {
-            IniData data = this.IniCheck();
-            if (!this.flagPathZip)
+            try
             {
-                OpenFileDialog dialog = new OpenFileDialog();
-                dialog.Title = "Select 7-Zip executable file";
-                dialog.FileName = "7z";
-                dialog.DefaultExt = "exe";
-                dialog.Filter = "7z.exe (*.exe)|*.exe";
-                dialog.InitialDirectory = @"C:\Program Files\";
-                DialogResult dialogResult = dialog.ShowDialog();
-                if (dialogResult == DialogResult.OK && dialog.CheckFileExists)
+                IniData data = this.IniCheck();
+                string pathZip = data["folders"]["7zip"];
+                if (System.IO.File.Exists(pathZip))
                 {
-                    var parser = new FileIniDataParser();
-                    data["folders"]["7zip"] = dialog.FileName;
-                    parser.WriteFile("options.ini", data);
-                    this.ChecksFolders7Zip();
+                    System.Diagnostics.Process.Start("explorer.exe", "/select," + pathZip);
                 }
+            }
+            catch
+            {
+                MessageBox.Show(
+                    "Задан неверный путь к архиватору",
+                    "Ошибка",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
             }
         }
 
-        private void btnFoldersFrom_Click(object sender, EventArgs e)
+        private void btnFolders7ZipEdit_Click(object sender, EventArgs e)
         {
             IniData data = this.IniCheck();
-            if (!this.flagPathFrom)
+            OpenFileDialog dialog = new OpenFileDialog();
+            dialog.Title = "Select 7-Zip executable file";
+            dialog.FileName = "7z";
+            dialog.DefaultExt = "exe";
+            dialog.Filter = "7z.exe (*.exe)|*.exe";
+            dialog.InitialDirectory = @"C:\Program Files\";
+            DialogResult dialogResult = dialog.ShowDialog();
+            if (dialogResult == DialogResult.OK && dialog.CheckFileExists)
             {
-                FolderBrowserDialog dialog = new FolderBrowserDialog();
-                DialogResult dialogResult = dialog.ShowDialog();
-                if (dialogResult == DialogResult.OK && System.IO.Directory.Exists(dialog.SelectedPath))
-                {
-                    var parser = new FileIniDataParser();
-                    data["folders"]["from"] = dialog.SelectedPath;
-                    parser.WriteFile("options.ini", data);
-                    this.ChecksFoldersFrom();
-                }
+                var parser = new FileIniDataParser();
+                data["folders"]["7zip"] = dialog.FileName;
+                parser.WriteFile("options.ini", data);
+                this.ChecksFolders7Zip();
+            }
+            if (!dialog.CheckFileExists)
+            {
+                MessageBox.Show(
+                    "Задан неверный путь к архиватору",
+                    "Ошибка",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
             }
         }
+
+        private void btnFoldersFromOpen_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                IniData data = this.IniCheck();
+                string pathFrom = data["folders"]["from"];
+                if (pathFrom != "")
+                {
+                    if (System.IO.Directory.Exists(pathFrom))
+                    {
+                        System.Diagnostics.Process.Start("explorer.exe", pathFrom);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show(
+                        "Задан неверный путь к папке ОТКУДА надо делать backup",
+                        "Ошибка",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error
+                    );
+                }
+            }
+            catch
+            {
+                MessageBox.Show(
+                    "Задан неверный путь к папке ОТКУДА надо делать backup",
+                    "Ошибка",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
+            }
+        }
+
+        private void btnFoldersFromEdit_Click(object sender, EventArgs e)
+        {
+            IniData data = this.IniCheck();
+            FolderBrowserDialog dialog = new FolderBrowserDialog();
+            DialogResult dialogResult = dialog.ShowDialog();
+            if (dialogResult == DialogResult.OK && System.IO.Directory.Exists(dialog.SelectedPath))
+            {
+                var parser = new FileIniDataParser();
+                data["folders"]["from"] = dialog.SelectedPath;
+                parser.WriteFile("options.ini", data);
+                this.ChecksFoldersFrom();
+            }
+            if (!System.IO.Directory.Exists(dialog.SelectedPath))
+            {
+                MessageBox.Show(
+                    "Задан неверный путь к папке ОТКУДА надо делать backup",
+                    "Ошибка",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
+            }
+        }
+        private void btnFoldersToOpen_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                IniData data = this.IniCheck();
+                string pathTo = data["folders"]["to"];
+                if (pathTo != "")
+                {
+                    if (System.IO.Directory.Exists(pathTo))
+                    {
+                        System.Diagnostics.Process.Start("explorer.exe", pathTo.ToString());
+                    }
+                }
+                else
+                {
+                    MessageBox.Show(
+                        "Задан неверный путь к папке КУДА надо делать backup",
+                        "Ошибка",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error
+                    );
+                }
+            }
+            catch
+            {
+                MessageBox.Show(
+                    "Задан неверный путь к папке КУДА надо делать backup",
+                    "Ошибка",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
+            }
+        }
+        
+        private void btnFoldersToEdit_Click(object sender, EventArgs e)
+        {
+            IniData data = this.IniCheck();
+            FolderBrowserDialog dialog = new FolderBrowserDialog();
+            DialogResult dialogResult = dialog.ShowDialog();
+            if (dialogResult == DialogResult.OK && System.IO.Directory.Exists(dialog.SelectedPath))
+            {
+                var parser = new FileIniDataParser();
+                data["folders"]["to"] = dialog.SelectedPath;
+                parser.WriteFile("options.ini", data);
+                this.ChecksFoldersFrom();
+            }
+            if (!System.IO.Directory.Exists(dialog.SelectedPath))
+            {
+                MessageBox.Show(
+                    "Задан неверный путь к папке КУДА надо делать backup",
+                    "Ошибка",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
+            }
+        }
+
     }
 }
