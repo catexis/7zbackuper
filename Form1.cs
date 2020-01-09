@@ -21,6 +21,51 @@ namespace _004_backuper
             InitializeComponent();
             this.IniCheck();
             this.OptionsCheck();
+            this.GetLastBackupFile();
+        }
+
+        private string GetLastBackupFile()
+        {
+            IniData data = this.IniCheck();
+            DateTime fileDateTimeCreationNewest = new DateTime(1970, 1, 1);
+            string fileBackupNewest = "";
+            string pathTo = data["folders"]["to"];
+            if (System.IO.Directory.Exists(pathTo))
+            {
+                string[] filePaths = System.IO.Directory.GetFiles(pathTo, "*.zip");
+                if (filePaths.Length == 0)
+                {
+                    lblBackupFileName.Text = "No backups yet";
+                    lblBackupFileTime.Text = "";
+                    lblBackupFilesTotal.Text = "Total: 0";
+                }
+                else
+                {
+                    lblBackupFilesTotal.Text = String.Format("Total: {0}", filePaths.Length);
+                    for (int i = 0; i < filePaths.Length; i++)
+                    {
+                        DateTime fileDateTimeCreationCurrent = System.IO.File.GetCreationTime(filePaths[i]);
+                        if (fileDateTimeCreationCurrent > fileDateTimeCreationNewest)
+                        {
+                            fileBackupNewest = filePaths[i];
+                            fileDateTimeCreationNewest = fileDateTimeCreationCurrent;
+                        }
+                    }
+                    lblBackupFileName.Text = System.IO.Path.GetFileName(fileBackupNewest);
+                    lblBackupFileTime.Text = fileDateTimeCreationNewest.ToString("yyyy'/'MM'/'dd HH:mm");
+                }
+            }
+            else
+            {
+                MessageBox.Show(
+                    "Задан неверный путь к папке КУДА надо делать backup",
+                    "Ошибка",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
+                fileBackupNewest = "";
+            }
+            return fileBackupNewest;
         }
 
         private IniData IniCheck()
@@ -51,6 +96,12 @@ namespace _004_backuper
                     data["folders"]["from"] = "";
                     data["folders"]["to"] = "";
                     data["service"]["every"] = "10";
+                    // a - archiving
+                    // tzip - to zip format
+                    // ssw - archive even files open
+                    // mx5 - compression rate
+                    data["zip_command"]["zip_args"] = "a -tzip -ssw -mx5";
+
                     parser.WriteFile("options.ini", data);
                     this.iniData = data;
                 } else {
@@ -65,6 +116,7 @@ namespace _004_backuper
             this.ChecksFolders7Zip();
             this.ChecksFoldersFrom();
             this.ChecksFoldersTo();
+            this.GetLastBackupFile();
         }
 
         private void btnChecksRescan_Click(object sender, EventArgs e)
@@ -277,5 +329,50 @@ namespace _004_backuper
             }
         }
 
+        private string BackupCreate()
+        {
+            string fileNewArchiveName = String.Format("{0}.zip", DateTime.Now.ToString("yyyy'_'MM'_'dd'_'HH'_'mm'_'ss"));
+            string fileArchiveFullPath = "";
+            IniData data = this.IniCheck();
+            try
+            {
+                string zipArgs = data["zip_command"]["zip_args"];
+                if (zipArgs == null || zipArgs == "")
+                {
+                    var parser = new FileIniDataParser();
+                    data["zip_command"]["zip_args"] = "a -tzip -ssw -mx5";
+                    parser.WriteFile("options.ini", data);
+                    zipArgs = data["zip_command"]["zip_args"];
+                }
+                else
+                {
+                    string pathZip = data["folders"]["7zip"];
+                    string pathFrom = data["folders"]["from"];
+                    string pathTo = data["folders"]["to"];
+                    fileArchiveFullPath = '"' + pathFrom + '\\' + fileNewArchiveName + '"';
+                    string fullArchiveCommand = '"' + pathZip + '"' +
+                                                ' ' + zipArgs + ' ' +
+                                                fileArchiveFullPath +
+                                                '"' + pathTo + '"';
+                    return fileArchiveFullPath;
+                }
+            }
+            catch
+            {
+                MessageBox.Show(
+                    "С архивированием что-то пошло не так",
+                    "Ошибка",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
+            }
+            return fileArchiveFullPath;
+            //System.Diagnostics.Process.Start()
+        }
+
+        private void btnBackupRun_Click(object sender, EventArgs e)
+        {
+            this.BackupCreate();
+        }
     }
 }

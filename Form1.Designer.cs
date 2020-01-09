@@ -45,6 +45,7 @@
             this.lblCommingSoon = new System.Windows.Forms.Label();
             this.btnBackupRun = new System.Windows.Forms.Button();
             this.btnChecksRescan = new System.Windows.Forms.Button();
+            this.lblBackupFilesTotal = new System.Windows.Forms.Label();
             this.grpChecks.SuspendLayout();
             this.grpLastBackup.SuspendLayout();
             this.grpAsService.SuspendLayout();
@@ -168,6 +169,7 @@
             // 
             // grpLastBackup
             // 
+            this.grpLastBackup.Controls.Add(this.lblBackupFilesTotal);
             this.grpLastBackup.Controls.Add(this.lblBackupFileTime);
             this.grpLastBackup.Controls.Add(this.lblBackupFileName);
             this.grpLastBackup.Location = new System.Drawing.Point(200, 120);
@@ -229,6 +231,7 @@
             this.btnBackupRun.TabIndex = 4;
             this.btnBackupRun.Text = "Run backup";
             this.btnBackupRun.UseVisualStyleBackColor = true;
+            this.btnBackupRun.Click += new System.EventHandler(this.btnBackupRun_Click);
             // 
             // btnChecksRescan
             // 
@@ -239,6 +242,17 @@
             this.btnChecksRescan.Text = "Rescan checks";
             this.btnChecksRescan.UseVisualStyleBackColor = true;
             this.btnChecksRescan.Click += new System.EventHandler(this.btnChecksRescan_Click);
+            // 
+            // lblBackupFilesTotal
+            // 
+            this.lblBackupFilesTotal.Dock = System.Windows.Forms.DockStyle.Top;
+            this.lblBackupFilesTotal.Location = new System.Drawing.Point(3, 66);
+            this.lblBackupFilesTotal.Margin = new System.Windows.Forms.Padding(5);
+            this.lblBackupFilesTotal.Name = "lblBackupFilesTotal";
+            this.lblBackupFilesTotal.Size = new System.Drawing.Size(179, 25);
+            this.lblBackupFilesTotal.TabIndex = 2;
+            this.lblBackupFilesTotal.Text = "Total backups";
+            this.lblBackupFilesTotal.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // MainForm
             // 
@@ -277,6 +291,7 @@
         private System.Windows.Forms.Button btnFoldersFromEdit;
         private System.Windows.Forms.Button btnFolders7ZipEdit;
         private System.Windows.Forms.Label lblCommingSoon;
+        private System.Windows.Forms.Label lblBackupFilesTotal;
     }
 }
 
