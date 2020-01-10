@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using IniParser;
-using IniParser.Model;
 
 namespace _004_backuper
 {

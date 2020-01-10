@@ -1,20 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Timers;
 using System.Windows.Forms;
 using IniParser;
 using IniParser.Model;
+
 
 namespace _004_backuper
 {
     public partial class MainForm : Form
     {
         IniData iniData = new IniData();
+        private static System.Timers.Timer aTimer;
+        private System.Windows.Forms.Timer timer1;
+        private int runEvery = 0;
+        private bool serviceStatus = false;
 
         public MainForm()
         {
@@ -116,12 +115,21 @@ namespace _004_backuper
             this.ChecksFolders7Zip();
             this.ChecksFoldersFrom();
             this.ChecksFoldersTo();
+            this.ChecksServiceRunEvery();
             this.GetLastBackupFile();
         }
 
         private void btnChecksRescan_Click(object sender, EventArgs e)
         {
             this.OptionsCheck();
+        }
+
+        private void ChecksServiceRunEvery()
+        {
+            IniData data = this.IniCheck();
+            string runEveryFromIni = data["service"]["every"];
+            lblServiceRunEveryValue.Text = runEveryFromIni;
+            runEvery = Int16.Parse(runEveryFromIni);
         }
 
         private void ChecksFolders7Zip()
@@ -356,9 +364,7 @@ namespace _004_backuper
                     processInfo.Arguments = zipArgs + " " + fileArchiveFullPath + " " + '\"' + pathFrom + '\"';
                     processInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
                     System.Diagnostics.Process archiveResult = System.Diagnostics.Process.Start(processInfo);
-                    btnBackupRun.Enabled = false;
                     archiveResult.WaitForExit();
-                    btnBackupRun.Enabled = true;
                     return fileArchiveFullPath;
                 }
             }
@@ -376,8 +382,72 @@ namespace _004_backuper
 
         private void btnBackupRun_Click(object sender, EventArgs e)
         {
+            btnBackupRun.Enabled = false;
             this.BackupCreate();
+            btnBackupRun.Enabled = true;
             this.OptionsCheck();
+        }
+
+        private void SetTimer()
+        {
+            IniData data = this.IniCheck();
+            // Create a timer with time in millisesonds.
+            int runEvery = Int16.Parse(data["service"]["every"]);
+            #if DEBUG
+                aTimer = new System.Timers.Timer(10000);
+            #else
+                aTimer = new System.Timers.Timer(runEvery*60000);
+            #endif
+            // Hook up the Elapsed event for the timer. 
+            aTimer.Elapsed += OnTimedEvent;
+            aTimer.AutoReset = true;
+            aTimer.Enabled = true;
+        }
+
+        private void OnTimedEvent(Object source, ElapsedEventArgs e)
+        {
+            this.BackupCreate();
+            icnTrayIcon.BalloonTipIcon = ToolTipIcon.Info;
+            icnTrayIcon.BalloonTipText = "New backup created!";
+            icnTrayIcon.BalloonTipTitle = "New backup";
+            icnTrayIcon.ShowBalloonTip(2000);
+        }
+
+        private void btnServiceRun_Click(object sender, EventArgs e)
+        {
+            if (!this.serviceStatus)
+            {
+                SetTimer();
+                btnServiceRun.Text = "Service stop";
+                lblServiceStatus.Text = "running";
+                lblServiceStatus.ForeColor = System.Drawing.Color.Green;
+                this.serviceStatus = true;
+
+                timer1 = new System.Windows.Forms.Timer();
+                timer1.Tick += new EventHandler(timer1_Tick);
+                timer1.Interval = 1000; // 1 second
+                timer1.Start();
+                lblServiceCoutdownValue.Text = runEvery.ToString();
+                lblServiceCoutdownValue.ForeColor = System.Drawing.Color.Green;
+            }
+            else
+            {
+                aTimer.Stop();
+                btnServiceRun.Text = "Service run";
+                lblServiceStatus.Text = "stoped";
+                lblServiceStatus.ForeColor = System.Drawing.Color.Gray;
+                lblServiceCoutdownValue.Text = runEvery.ToString();
+                lblServiceCoutdownValue.ForeColor = System.Drawing.Color.Gray;
+                this.serviceStatus = false;
+            }
+        }
+
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            runEvery--;
+            if (runEvery == 0)
+                timer1.Stop();
+            lblServiceCoutdownValue.Text = runEvery.ToString();
         }
     }
 }
