@@ -127,7 +127,7 @@ namespace _004_backuper
         private void ChecksFolders7Zip()
         {
             IniData data = this.IniCheck();
-            if ( System.IO.File.Exists( data["folders"]["7zip"] ) ) {
+            if ( System.IO.Directory.Exists(data["folders"]["7zip"])) {
                 lblCheck7Zip.Text = "✔ 7Zip is ok";
                 lblCheck7Zip.ForeColor = System.Drawing.Color.Green;
             } else {
@@ -201,7 +201,7 @@ namespace _004_backuper
             if (dialogResult == DialogResult.OK && dialog.CheckFileExists)
             {
                 var parser = new FileIniDataParser();
-                data["folders"]["7zip"] = dialog.FileName;
+                data["folders"]["7zip"] = System.IO.Path.GetDirectoryName(dialog.FileName);
                 parser.WriteFile("options.ini", data);
                 this.ChecksFolders7Zip();
             }
@@ -331,6 +331,7 @@ namespace _004_backuper
 
         private string BackupCreate()
         {
+            
             string fileNewArchiveName = String.Format("{0}.zip", DateTime.Now.ToString("yyyy'_'MM'_'dd'_'HH'_'mm'_'ss"));
             string fileArchiveFullPath = "";
             IniData data = this.IniCheck();
@@ -349,11 +350,15 @@ namespace _004_backuper
                     string pathZip = data["folders"]["7zip"];
                     string pathFrom = data["folders"]["from"];
                     string pathTo = data["folders"]["to"];
-                    fileArchiveFullPath = '"' + pathFrom + '\\' + fileNewArchiveName + '"';
-                    string fullArchiveCommand = '"' + pathZip + '"' +
-                                                ' ' + zipArgs + ' ' +
-                                                fileArchiveFullPath +
-                                                '"' + pathTo + '"';
+                    fileArchiveFullPath = '\"' + pathTo + '\\' + fileNewArchiveName + '\"';
+                    System.Diagnostics.ProcessStartInfo processInfo = new System.Diagnostics.ProcessStartInfo();
+                    processInfo.FileName = pathZip + "\\7z.exe";
+                    processInfo.Arguments = zipArgs + " " + fileArchiveFullPath + " " + '\"' + pathFrom + '\"';
+                    processInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
+                    System.Diagnostics.Process archiveResult = System.Diagnostics.Process.Start(processInfo);
+                    btnBackupRun.Enabled = false;
+                    archiveResult.WaitForExit();
+                    btnBackupRun.Enabled = true;
                     return fileArchiveFullPath;
                 }
             }
@@ -367,12 +372,12 @@ namespace _004_backuper
                 );
             }
             return fileArchiveFullPath;
-            //System.Diagnostics.Process.Start()
         }
 
         private void btnBackupRun_Click(object sender, EventArgs e)
         {
             this.BackupCreate();
+            this.OptionsCheck();
         }
     }
 }
