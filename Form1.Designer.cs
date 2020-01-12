@@ -56,6 +56,7 @@
             this.btnChecksRescan = new System.Windows.Forms.Button();
             this.icnTrayIcon = new System.Windows.Forms.NotifyIcon(this.components);
             this.btnIniOpen = new System.Windows.Forms.Button();
+            this.lblBackupSize = new System.Windows.Forms.Label();
             this.grpChecks.SuspendLayout();
             this.grpLastBackup.SuspendLayout();
             this.grpAsService.SuspendLayout();
@@ -179,6 +180,7 @@
             // 
             // grpLastBackup
             // 
+            this.grpLastBackup.Controls.Add(this.lblBackupSize);
             this.grpLastBackup.Controls.Add(this.lblBackupFilesTotal);
             this.grpLastBackup.Controls.Add(this.lblBackupFileTime);
             this.grpLastBackup.Controls.Add(this.lblBackupFileName);
@@ -191,14 +193,13 @@
             // 
             // lblBackupFilesTotal
             // 
-            this.lblBackupFilesTotal.Dock = System.Windows.Forms.DockStyle.Top;
             this.lblBackupFilesTotal.Location = new System.Drawing.Point(3, 66);
             this.lblBackupFilesTotal.Margin = new System.Windows.Forms.Padding(5);
             this.lblBackupFilesTotal.Name = "lblBackupFilesTotal";
-            this.lblBackupFilesTotal.Size = new System.Drawing.Size(179, 25);
+            this.lblBackupFilesTotal.Size = new System.Drawing.Size(82, 25);
             this.lblBackupFilesTotal.TabIndex = 2;
             this.lblBackupFilesTotal.Text = "Total backups";
-            this.lblBackupFilesTotal.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.lblBackupFilesTotal.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // lblBackupFileTime
             // 
@@ -209,7 +210,7 @@
             this.lblBackupFileTime.Size = new System.Drawing.Size(179, 25);
             this.lblBackupFileTime.TabIndex = 1;
             this.lblBackupFileTime.Text = "File time";
-            this.lblBackupFileTime.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.lblBackupFileTime.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // lblBackupFileName
             // 
@@ -220,7 +221,7 @@
             this.lblBackupFileName.Size = new System.Drawing.Size(179, 25);
             this.lblBackupFileName.TabIndex = 0;
             this.lblBackupFileName.Text = "File name";
-            this.lblBackupFileName.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.lblBackupFileName.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // grpAsService
             // 
@@ -342,6 +343,16 @@
             this.btnIniOpen.UseVisualStyleBackColor = true;
             this.btnIniOpen.Click += new System.EventHandler(this.btnIniOpen_Click);
             // 
+            // lblBackupSize
+            // 
+            this.lblBackupSize.Location = new System.Drawing.Point(95, 66);
+            this.lblBackupSize.Margin = new System.Windows.Forms.Padding(5);
+            this.lblBackupSize.Name = "lblBackupSize";
+            this.lblBackupSize.Size = new System.Drawing.Size(82, 25);
+            this.lblBackupSize.TabIndex = 3;
+            this.lblBackupSize.Text = "Backup size";
+            this.lblBackupSize.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
             // MainForm
             // 
             this.ClientSize = new System.Drawing.Size(396, 334);
@@ -392,6 +403,7 @@
         private System.Windows.Forms.Label lblServiceRunEveryText;
         private System.Windows.Forms.Label lblServiceStatusStatic;
         private System.Windows.Forms.Button btnIniOpen;
+        private System.Windows.Forms.Label lblBackupSize;
     }
 }
 

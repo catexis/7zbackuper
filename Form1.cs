@@ -53,6 +53,9 @@ namespace _backuper
                     }
                     lblBackupFileName.Text = System.IO.Path.GetFileName(fileBackupNewest);
                     lblBackupFileTime.Text = fileDateTimeCreationNewest.ToString("yyyy'/'MM'/'dd HH:mm");
+                    long fileLengthBytes = new System.IO.FileInfo(fileBackupNewest).Length;
+                    decimal fileLengthMb = fileLengthBytes / 1024 / 1024;
+                    lblBackupSize.Text = String.Format("Size: {0}Mb", Math.Round(fileLengthMb, 1));
                 }
             }
             else
