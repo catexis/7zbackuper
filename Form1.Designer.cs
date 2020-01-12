@@ -55,6 +55,7 @@
             this.btnBackupRun = new System.Windows.Forms.Button();
             this.btnChecksRescan = new System.Windows.Forms.Button();
             this.icnTrayIcon = new System.Windows.Forms.NotifyIcon(this.components);
+            this.btnIniOpen = new System.Windows.Forms.Button();
             this.grpChecks.SuspendLayout();
             this.grpLastBackup.SuspendLayout();
             this.grpAsService.SuspendLayout();
@@ -307,7 +308,7 @@
             // 
             this.btnBackupRun.Location = new System.Drawing.Point(12, 151);
             this.btnBackupRun.Name = "btnBackupRun";
-            this.btnBackupRun.Size = new System.Drawing.Size(182, 69);
+            this.btnBackupRun.Size = new System.Drawing.Size(181, 69);
             this.btnBackupRun.TabIndex = 4;
             this.btnBackupRun.Text = "Run backup";
             this.btnBackupRun.UseVisualStyleBackColor = true;
@@ -317,9 +318,9 @@
             // 
             this.btnChecksRescan.Location = new System.Drawing.Point(12, 120);
             this.btnChecksRescan.Name = "btnChecksRescan";
-            this.btnChecksRescan.Size = new System.Drawing.Size(182, 25);
+            this.btnChecksRescan.Size = new System.Drawing.Size(148, 25);
             this.btnChecksRescan.TabIndex = 5;
-            this.btnChecksRescan.Text = "Rescan checks";
+            this.btnChecksRescan.Text = "↻ Rescan checks";
             this.btnChecksRescan.UseVisualStyleBackColor = true;
             this.btnChecksRescan.Click += new System.EventHandler(this.btnChecksRescan_Click);
             // 
@@ -330,9 +331,21 @@
             this.icnTrayIcon.Text = "notifyIcon1";
             this.icnTrayIcon.Visible = true;
             // 
+            // btnIniOpen
+            // 
+            this.btnIniOpen.Location = new System.Drawing.Point(168, 120);
+            this.btnIniOpen.Margin = new System.Windows.Forms.Padding(5);
+            this.btnIniOpen.Name = "btnIniOpen";
+            this.btnIniOpen.Size = new System.Drawing.Size(25, 25);
+            this.btnIniOpen.TabIndex = 6;
+            this.btnIniOpen.Text = "⚙";
+            this.btnIniOpen.UseVisualStyleBackColor = true;
+            this.btnIniOpen.Click += new System.EventHandler(this.btnIniOpen_Click);
+            // 
             // MainForm
             // 
             this.ClientSize = new System.Drawing.Size(396, 334);
+            this.Controls.Add(this.btnIniOpen);
             this.Controls.Add(this.btnChecksRescan);
             this.Controls.Add(this.btnBackupRun);
             this.Controls.Add(this.grpAsService);
@@ -378,6 +391,7 @@
         private System.Windows.Forms.Label lblServiceStatus;
         private System.Windows.Forms.Label lblServiceRunEveryText;
         private System.Windows.Forms.Label lblServiceStatusStatic;
+        private System.Windows.Forms.Button btnIniOpen;
     }
 }
 
