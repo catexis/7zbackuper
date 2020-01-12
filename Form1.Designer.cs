@@ -339,7 +339,9 @@
             this.Controls.Add(this.grpLastBackup);
             this.Controls.Add(this.grpChecks);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.MaximizeBox = false;
             this.Name = "MainForm";
+            this.Opacity = 0.9D;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "7-Zip Backuper";
             this.grpChecks.ResumeLayout(false);

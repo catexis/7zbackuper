@@ -11,8 +11,9 @@ namespace _004_backuper
     {
         IniData iniData = new IniData();
         private static System.Timers.Timer aTimer;
-        private System.Windows.Forms.Timer timer1;
-        private int runEvery = 0;
+        private System.Windows.Forms.Timer countdownTimer;
+        private System.Windows.Forms.Timer archiveWatchDogTimer;
+        private Int32 runEvery = 0;
         private bool serviceStatus = false;
 
         public MainForm()
@@ -31,7 +32,7 @@ namespace _004_backuper
             string pathTo = data["folders"]["to"];
             if (System.IO.Directory.Exists(pathTo))
             {
-                string[] filePaths = System.IO.Directory.GetFiles(pathTo, "*.zip");
+                string[] filePaths = System.IO.Directory.GetFiles(pathTo, "*.7z");
                 if (filePaths.Length == 0)
                 {
                     lblBackupFileName.Text = "No backups yet";
@@ -95,11 +96,11 @@ namespace _004_backuper
                     data["folders"]["from"] = "";
                     data["folders"]["to"] = "";
                     data["service"]["every"] = "10";
+                    data["cleanup"]["countofarchive"] = "3"; // Count of archive in folder 'to'
                     // a - archiving
-                    // tzip - to zip format
                     // ssw - archive even files open
                     // mx5 - compression rate
-                    data["zip_command"]["zip_args"] = "a -tzip -ssw -mx5";
+                    data["zip_command"]["zip_args"] = "a -ssw -mx5";
 
                     parser.WriteFile("options.ini", data);
                     this.iniData = data;
@@ -115,7 +116,10 @@ namespace _004_backuper
             this.ChecksFolders7Zip();
             this.ChecksFoldersFrom();
             this.ChecksFoldersTo();
-            this.ChecksServiceRunEvery();
+            if (!serviceStatus)
+            { 
+                this.ChecksServiceRunEvery();
+            }
             this.GetLastBackupFile();
         }
 
@@ -129,7 +133,7 @@ namespace _004_backuper
             IniData data = this.IniCheck();
             string runEveryFromIni = data["service"]["every"];
             lblServiceRunEveryValue.Text = runEveryFromIni;
-            runEvery = Int16.Parse(runEveryFromIni);
+            runEvery = Int32.Parse(runEveryFromIni) * 60000; // In milliseconds
         }
 
         private void ChecksFolders7Zip()
@@ -180,9 +184,9 @@ namespace _004_backuper
             {
                 IniData data = this.IniCheck();
                 string pathZip = data["folders"]["7zip"];
-                if (System.IO.File.Exists(pathZip))
+                if (System.IO.Directory.Exists(pathZip))
                 {
-                    System.Diagnostics.Process.Start("explorer.exe", "/select," + pathZip);
+                    System.Diagnostics.Process.Start("explorer.exe", pathZip);
                 }
             }
             catch
@@ -340,7 +344,7 @@ namespace _004_backuper
         private string BackupCreate()
         {
             
-            string fileNewArchiveName = String.Format("{0}.zip", DateTime.Now.ToString("yyyy'_'MM'_'dd'_'HH'_'mm'_'ss"));
+            string fileNewArchiveName = String.Format("{0}.7z", DateTime.Now.ToString("yyyy'_'MM'_'dd'_'HH'_'mm'_'ss"));
             string fileArchiveFullPath = "";
             IniData data = this.IniCheck();
             try
@@ -349,7 +353,7 @@ namespace _004_backuper
                 if (zipArgs == null || zipArgs == "")
                 {
                     var parser = new FileIniDataParser();
-                    data["zip_command"]["zip_args"] = "a -tzip -ssw -mx5";
+                    data["zip_command"]["zip_args"] = "a -ssw -mx7";
                     parser.WriteFile("options.ini", data);
                     zipArgs = data["zip_command"]["zip_args"];
                 }
@@ -358,6 +362,8 @@ namespace _004_backuper
                     string pathZip = data["folders"]["7zip"];
                     string pathFrom = data["folders"]["from"];
                     string pathTo = data["folders"]["to"];
+                    // string pathTemp = System.IO.Path.GetTempPath(); // Through temp dir
+                    // fileArchiveFullPath = '\"' + pathTemp + '\\' + fileNewArchiveName + '\"'; // Through temp dir
                     fileArchiveFullPath = '\"' + pathTo + '\\' + fileNewArchiveName + '\"';
                     System.Diagnostics.ProcessStartInfo processInfo = new System.Diagnostics.ProcessStartInfo();
                     processInfo.FileName = pathZip + "\\7z.exe";
@@ -365,6 +371,7 @@ namespace _004_backuper
                     processInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
                     System.Diagnostics.Process archiveResult = System.Diagnostics.Process.Start(processInfo);
                     archiveResult.WaitForExit();
+                    // System.IO.File.Move(pathTemp + fileNewArchiveName, pathTo + '\\' + fileNewArchiveName);  // Through temp dir
                     return fileArchiveFullPath;
                 }
             }
@@ -384,6 +391,7 @@ namespace _004_backuper
         {
             btnBackupRun.Enabled = false;
             this.BackupCreate();
+            this.CleanUp();
             btnBackupRun.Enabled = true;
             this.OptionsCheck();
         }
@@ -391,13 +399,8 @@ namespace _004_backuper
         private void SetTimer()
         {
             IniData data = this.IniCheck();
-            // Create a timer with time in millisesonds.
-            int runEvery = Int16.Parse(data["service"]["every"]);
-            #if DEBUG
-                aTimer = new System.Timers.Timer(10000);
-            #else
-                aTimer = new System.Timers.Timer(runEvery*60000);
-            #endif
+            this.ChecksServiceRunEvery();
+            aTimer = new System.Timers.Timer(runEvery);
             // Hook up the Elapsed event for the timer. 
             aTimer.Elapsed += OnTimedEvent;
             aTimer.AutoReset = true;
@@ -407,6 +410,7 @@ namespace _004_backuper
         private void OnTimedEvent(Object source, ElapsedEventArgs e)
         {
             this.BackupCreate();
+            this.CleanUp();
             icnTrayIcon.BalloonTipIcon = ToolTipIcon.Info;
             icnTrayIcon.BalloonTipText = "New backup created!";
             icnTrayIcon.BalloonTipTitle = "New backup";
@@ -423,31 +427,95 @@ namespace _004_backuper
                 lblServiceStatus.ForeColor = System.Drawing.Color.Green;
                 this.serviceStatus = true;
 
-                timer1 = new System.Windows.Forms.Timer();
-                timer1.Tick += new EventHandler(timer1_Tick);
-                timer1.Interval = 1000; // 1 second
-                timer1.Start();
-                lblServiceCoutdownValue.Text = runEvery.ToString();
+                countdownTimer = new System.Windows.Forms.Timer();
+                countdownTimer.Tick += new EventHandler(timer1_Tick);
+                countdownTimer.Interval = 1000; // 1 second
+                countdownTimer.Start();
+                TimeSpan ts = TimeSpan.FromMilliseconds(runEvery);
+                lblServiceCoutdownValue.Text = String.Format("{0:00}:{1:00}", ts.Minutes, ts.Seconds);
                 lblServiceCoutdownValue.ForeColor = System.Drawing.Color.Green;
+
+                archiveWatchDogTimer = new System.Windows.Forms.Timer();
+                archiveWatchDogTimer.Tick += new EventHandler(archiveWatchDogTimer_Tick);
+                archiveWatchDogTimer.Interval = 5000;
+                archiveWatchDogTimer.Start();
             }
             else
             {
                 aTimer.Stop();
+                countdownTimer.Stop();
+                archiveWatchDogTimer.Stop();
                 btnServiceRun.Text = "Service run";
                 lblServiceStatus.Text = "stoped";
                 lblServiceStatus.ForeColor = System.Drawing.Color.Gray;
                 lblServiceCoutdownValue.Text = runEvery.ToString();
                 lblServiceCoutdownValue.ForeColor = System.Drawing.Color.Gray;
                 this.serviceStatus = false;
+                this.ChecksServiceRunEvery();
+                TimeSpan ts = TimeSpan.FromMilliseconds(runEvery);
+                lblServiceCoutdownValue.Text = String.Format("{0:00}:{1:00}", ts.Minutes, ts.Seconds);
             }
         }
 
         private void timer1_Tick(object sender, EventArgs e)
         {
-            runEvery--;
-            if (runEvery == 0)
-                timer1.Stop();
-            lblServiceCoutdownValue.Text = runEvery.ToString();
+            // runEvery in milliseconds
+            runEvery = runEvery - 1000;
+            if (runEvery == 0) { 
+                countdownTimer.Stop();
+                this.OptionsCheck();
+                this.ChecksServiceRunEvery();
+                countdownTimer.Start();
+            }
+            TimeSpan ts = TimeSpan.FromMilliseconds(runEvery);
+            lblServiceCoutdownValue.Text = String.Format("{0:00}:{1:00}", ts.Minutes, ts.Seconds);
+        }
+
+        private void archiveWatchDogTimer_Tick(object sender, EventArgs e)
+        {
+            this.GetLastBackupFile();
+        }
+
+        private void CleanUp()
+        {
+            IniData data = this.IniCheck();
+            Int32 archiveCount = 0;
+            string[] fileNamesOldFiles = new string[0];
+            if (!String.IsNullOrEmpty(data["cleanup"]["countofarchive"]))
+            {
+                archiveCount = Int32.Parse(data["cleanup"]["countofarchive"]);
+            }
+            else
+            {
+                var parser = new FileIniDataParser();
+                data["cleanup"]["countofarchive"] = "3";
+                parser.WriteFile("options.ini", data);
+                archiveCount = Int32.Parse(data["cleanup"]["countofarchive"]);
+            }
+            string pathTo = data["folders"]["to"];
+            string[] fileNames = System.IO.Directory.GetFiles(pathTo, "*.7z");
+            DateTime[] creationTimes = new DateTime[fileNames.Length];
+            for (int i = 0; i < fileNames.Length; i++)
+            {
+                creationTimes[i] = new System.IO.FileInfo(fileNames[i]).CreationTime;
+            }
+            Array.Sort(creationTimes, fileNames);
+            Array.Reverse(fileNames);
+            if (fileNames.Length > archiveCount)
+            {
+                fileNamesOldFiles = new string[fileNames.Length - archiveCount];
+                for (int i=archiveCount; i<fileNames.Length; i++)
+                {
+                    fileNamesOldFiles[i - archiveCount] = fileNames[i];
+                }
+            }
+            if (fileNamesOldFiles.Length > 0)
+            {
+                for (int i=0; i<fileNamesOldFiles.Length; i++)
+                {
+                    System.IO.File.Delete(fileNamesOldFiles[i]);
+                }
+            }
         }
     }
 }
