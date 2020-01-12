@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 
-namespace _004_backuper
+namespace _backuper
 {
     static class Program
     {

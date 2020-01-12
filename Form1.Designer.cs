@@ -1,4 +1,4 @@
-﻿namespace _004_backuper
+﻿namespace _backuper
 {
     partial class MainForm
     {

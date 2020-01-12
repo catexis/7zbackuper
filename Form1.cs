@@ -5,7 +5,7 @@ using IniParser;
 using IniParser.Model;
 
 
-namespace _004_backuper
+namespace _backuper
 {
     public partial class MainForm : Form
     {
