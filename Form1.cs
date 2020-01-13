@@ -361,7 +361,7 @@ namespace _backuper
                 var parser = new FileIniDataParser();
                 data["folders"]["to"] = dialog.SelectedPath;
                 parser.WriteFile("options.ini", data);
-                this.ChecksFoldersFrom();
+                this.ChecksFoldersTo();
             }
             if (!System.IO.Directory.Exists(dialog.SelectedPath))
             {
