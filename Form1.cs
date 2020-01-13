@@ -143,8 +143,18 @@ namespace _backuper
         {
             IniData data = this.IniCheck();
             string runEveryFromIni = data["service"]["every"];
-            lblServiceRunEveryValue.Text = runEveryFromIni;
-            runEvery = Int32.Parse(runEveryFromIni) * 60000; // In milliseconds
+            if (!String.IsNullOrEmpty(runEveryFromIni))
+            {
+                lblServiceRunEveryValue.Text = runEveryFromIni;
+                runEvery = Int32.Parse(runEveryFromIni) * 60000; // In milliseconds
+            }
+            else
+            {
+                var parser = new FileIniDataParser();
+                data["service"]["every"] = "10";
+                parser.WriteFile("options.ini", data);
+                this.iniData = data;
+            }
         }
 
         private void ChecksFolders7Zip()
