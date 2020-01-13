@@ -10,18 +10,23 @@ namespace _backuper
     public partial class MainForm : Form
     {
         IniData iniData = new IniData();
+        // Timers
         private static System.Timers.Timer aTimer;
         private System.Windows.Forms.Timer countdownTimer;
         private System.Windows.Forms.Timer archiveWatchDogTimer;
+        // Options
         private Int32 runEvery = 0;
         private bool serviceStatus = false;
+        private bool pathStatus7z = false;
+        private bool pathStatusFrom = false;
+        private bool pathStatusTo = false;
 
         public MainForm()
         {
             InitializeComponent();
             this.IniCheck();
             this.OptionsCheck();
-            this.GetLastBackupFile();
+            this.OptionsWatchDogRun();
         }
 
         private string GetLastBackupFile()
@@ -61,8 +66,8 @@ namespace _backuper
             else
             {
                 MessageBox.Show(
-                    "Задан неверный путь к папке КУДА надо делать backup",
-                    "Ошибка",
+                    "Can not get last backup file. Check folder 'to'.",
+                    "Error",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error
                 );
@@ -81,13 +86,13 @@ namespace _backuper
             catch (IniParser.Exceptions.ParsingException)
             {
                 MessageBox.Show(
-                    "Отсутствует конфигурационный файл options.ini",
-                    "Ошибка",
+                    "There is no options.ini file",
+                    "Error",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error
                 );
                 DialogResult result = MessageBox.Show(
-                    "Создать конфигурационный файл options.ini?",
+                    "Create file options.ini for you?",
                     "options.ini",
                     MessageBoxButtons.YesNo,
                     MessageBoxIcon.Question
@@ -103,7 +108,7 @@ namespace _backuper
                     // a - archiving
                     // ssw - archive even files open
                     // mx5 - compression rate
-                    data["zip_command"]["zip_args"] = "a -ssw -mx5";
+                    data["zip_command"]["zip_args"] = "a -ssw -mx7";
 
                     parser.WriteFile("options.ini", data);
                     this.iniData = data;
@@ -123,7 +128,10 @@ namespace _backuper
             { 
                 this.ChecksServiceRunEvery();
             }
-            this.GetLastBackupFile();
+            if (this.pathStatus7z && this.pathStatusFrom && this.pathStatusTo)
+            {
+                this.GetLastBackupFile();
+            }
         }
 
         private void btnChecksRescan_Click(object sender, EventArgs e)
@@ -145,9 +153,11 @@ namespace _backuper
             if ( System.IO.Directory.Exists(data["folders"]["7zip"])) {
                 lblCheck7Zip.Text = "✔ 7Zip is ok";
                 lblCheck7Zip.ForeColor = System.Drawing.Color.Green;
+                this.pathStatus7z = true;
             } else {
                 lblCheck7Zip.Text = "✘ Set path to 7Zip";
                 lblCheck7Zip.ForeColor = System.Drawing.Color.Red;
+                this.pathStatus7z = false;
             }
         }
 
@@ -158,11 +168,13 @@ namespace _backuper
             {
                 lblCheckFolderFrom.Text = "✔ Folder 'from' is ok";
                 lblCheckFolderFrom.ForeColor = System.Drawing.Color.Green;
+                this.pathStatusFrom = true;
             }
             else
             {
                 lblCheckFolderFrom.Text = "✘ Set path for backup";
                 lblCheckFolderFrom.ForeColor = System.Drawing.Color.Red;
+                this.pathStatusFrom = false;
             }
         }
 
@@ -173,11 +185,13 @@ namespace _backuper
             {
                 lblCheckFolderTo.Text = "✔ Folder 'to' is ok";
                 lblCheckFolderTo.ForeColor = System.Drawing.Color.Green;
+                this.pathStatusTo = true;
             }
             else
             {
                 lblCheckFolderTo.Text = "✘ Set path to backup";
                 lblCheckFolderTo.ForeColor = System.Drawing.Color.Red;
+                this.pathStatusTo = false;
             }
         }
 
@@ -187,16 +201,25 @@ namespace _backuper
             {
                 IniData data = this.IniCheck();
                 string pathZip = data["folders"]["7zip"];
-                if (System.IO.Directory.Exists(pathZip))
+                if (!String.IsNullOrEmpty(pathZip) && System.IO.Directory.Exists(pathZip))
                 {
                     System.Diagnostics.Process.Start("explorer.exe", pathZip);
+                }
+                else
+                {
+                    MessageBox.Show(
+                        "Wrong path to archiver",
+                        "Error",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error
+                    );
                 }
             }
             catch
             {
                 MessageBox.Show(
-                    "Задан неверный путь к архиватору",
-                    "Ошибка",
+                    "Wrong path to archiver",
+                    "Error",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error
                 );
@@ -223,8 +246,8 @@ namespace _backuper
             if (!dialog.CheckFileExists)
             {
                 MessageBox.Show(
-                    "Задан неверный путь к архиватору",
-                    "Ошибка",
+                    "Wrong path to archiver",
+                    "Error",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error
                 );
@@ -239,7 +262,7 @@ namespace _backuper
                 string pathFrom = data["folders"]["from"];
                 if (pathFrom != "")
                 {
-                    if (System.IO.Directory.Exists(pathFrom))
+                    if (!String.IsNullOrEmpty(pathFrom) && System.IO.Directory.Exists(pathFrom))
                     {
                         System.Diagnostics.Process.Start("explorer.exe", pathFrom);
                     }
@@ -247,8 +270,8 @@ namespace _backuper
                 else
                 {
                     MessageBox.Show(
-                        "Задан неверный путь к папке ОТКУДА надо делать backup",
-                        "Ошибка",
+                        "Wrong path. Check folder 'from'.",
+                        "Error",
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Error
                     );
@@ -257,8 +280,8 @@ namespace _backuper
             catch
             {
                 MessageBox.Show(
-                    "Задан неверный путь к папке ОТКУДА надо делать backup",
-                    "Ошибка",
+                    "Wrong path. Check folder 'from'.",
+                    "Error",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error
                 );
@@ -280,8 +303,8 @@ namespace _backuper
             if (!System.IO.Directory.Exists(dialog.SelectedPath))
             {
                 MessageBox.Show(
-                    "Задан неверный путь к папке ОТКУДА надо делать backup",
-                    "Ошибка",
+                    "Wrong path. Check folder 'from'.",
+                    "Error",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error
                 );
@@ -293,18 +316,15 @@ namespace _backuper
             {
                 IniData data = this.IniCheck();
                 string pathTo = data["folders"]["to"];
-                if (pathTo != "")
+                if (!String.IsNullOrEmpty(pathTo) && System.IO.Directory.Exists(pathTo))
                 {
-                    if (System.IO.Directory.Exists(pathTo))
-                    {
-                        System.Diagnostics.Process.Start("explorer.exe", pathTo.ToString());
-                    }
+                    System.Diagnostics.Process.Start("explorer.exe", pathTo.ToString());
                 }
                 else
                 {
                     MessageBox.Show(
-                        "Задан неверный путь к папке КУДА надо делать backup",
-                        "Ошибка",
+                        "Wrong path. Check folder 'to'.",
+                        "Error",
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Error
                     );
@@ -313,8 +333,8 @@ namespace _backuper
             catch
             {
                 MessageBox.Show(
-                    "Задан неверный путь к папке КУДА надо делать backup",
-                    "Ошибка",
+                    "Wrong path. Check folder 'to'.",
+                    "Error",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error
                 );
@@ -336,8 +356,8 @@ namespace _backuper
             if (!System.IO.Directory.Exists(dialog.SelectedPath))
             {
                 MessageBox.Show(
-                    "Задан неверный путь к папке КУДА надо делать backup",
-                    "Ошибка",
+                    "Wrong path. Check folder 'to'.",
+                    "Error",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error
                 );
@@ -365,8 +385,6 @@ namespace _backuper
                     string pathZip = data["folders"]["7zip"];
                     string pathFrom = data["folders"]["from"];
                     string pathTo = data["folders"]["to"];
-                    // string pathTemp = System.IO.Path.GetTempPath(); // Through temp dir
-                    // fileArchiveFullPath = '\"' + pathTemp + '\\' + fileNewArchiveName + '\"'; // Through temp dir
                     fileArchiveFullPath = '\"' + pathTo + '\\' + fileNewArchiveName + '\"';
                     System.Diagnostics.ProcessStartInfo processInfo = new System.Diagnostics.ProcessStartInfo();
                     processInfo.FileName = pathZip + "\\7z.exe";
@@ -374,15 +392,14 @@ namespace _backuper
                     processInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
                     System.Diagnostics.Process archiveResult = System.Diagnostics.Process.Start(processInfo);
                     archiveResult.WaitForExit();
-                    // System.IO.File.Move(pathTemp + fileNewArchiveName, pathTo + '\\' + fileNewArchiveName);  // Through temp dir
                     return fileArchiveFullPath;
                 }
             }
             catch
             {
                 MessageBox.Show(
-                    "С архивированием что-то пошло не так",
-                    "Ошибка",
+                    "Fail for backup creation. Check options.",
+                    "Error",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error
                 );
@@ -392,11 +409,36 @@ namespace _backuper
 
         private void btnBackupRun_Click(object sender, EventArgs e)
         {
-            btnBackupRun.Enabled = false;
-            this.BackupCreate();
-            this.CleanUp();
-            btnBackupRun.Enabled = true;
             this.OptionsCheck();
+            if (this.pathStatus7z && this.pathStatusFrom && this.pathStatusTo)
+            {
+                bool successBackupCreation = false;            
+                btnBackupRun.Enabled = false;
+                try
+                {
+                    this.BackupCreate();
+                    successBackupCreation = true;
+                }
+                catch
+                {
+                    Console.WriteLine("Fail for backup creation.");
+                }
+                if (successBackupCreation)
+                {
+                    this.CleanUp();
+                }
+                btnBackupRun.Enabled = true;
+                this.OptionsCheck();
+            }
+            else
+            {
+                MessageBox.Show(
+                    "Fail for run backup operation. Check options.",
+                    "Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
+            }
         }
 
         private void SetTimer()
@@ -420,43 +462,58 @@ namespace _backuper
             icnTrayIcon.ShowBalloonTip(2000);
         }
 
+        private void OptionsWatchDogRun()
+        {
+            archiveWatchDogTimer = new System.Windows.Forms.Timer();
+            archiveWatchDogTimer.Tick += new EventHandler(archiveWatchDogTimer_Tick);
+            archiveWatchDogTimer.Interval = 5000;
+            archiveWatchDogTimer.Start();
+        }
+
         private void btnServiceRun_Click(object sender, EventArgs e)
         {
-            if (!this.serviceStatus)
+            this.OptionsCheck();
+            if (this.pathStatus7z && this.pathStatusFrom && this.pathStatusTo)
             {
-                SetTimer();
-                btnServiceRun.Text = "Service stop";
-                lblServiceStatus.Text = "running";
-                lblServiceStatus.ForeColor = System.Drawing.Color.Green;
-                this.serviceStatus = true;
+                if (!this.serviceStatus)
+                {
+                    SetTimer();
+                    btnServiceRun.Text = "Service stop";
+                    lblServiceStatus.Text = "running";
+                    lblServiceStatus.ForeColor = System.Drawing.Color.Green;
+                    this.serviceStatus = true;
 
-                countdownTimer = new System.Windows.Forms.Timer();
-                countdownTimer.Tick += new EventHandler(timer1_Tick);
-                countdownTimer.Interval = 1000; // 1 second
-                countdownTimer.Start();
-                TimeSpan ts = TimeSpan.FromMilliseconds(runEvery);
-                lblServiceCoutdownValue.Text = String.Format("{0:00}:{1:00}", ts.Minutes, ts.Seconds);
-                lblServiceCoutdownValue.ForeColor = System.Drawing.Color.Green;
-
-                archiveWatchDogTimer = new System.Windows.Forms.Timer();
-                archiveWatchDogTimer.Tick += new EventHandler(archiveWatchDogTimer_Tick);
-                archiveWatchDogTimer.Interval = 5000;
-                archiveWatchDogTimer.Start();
+                    countdownTimer = new System.Windows.Forms.Timer();
+                    countdownTimer.Tick += new EventHandler(timer1_Tick);
+                    countdownTimer.Interval = 1000; // 1 second
+                    countdownTimer.Start();
+                    TimeSpan ts = TimeSpan.FromMilliseconds(runEvery);
+                    lblServiceCoutdownValue.Text = String.Format("{0:00}:{1:00}", ts.Minutes, ts.Seconds);
+                    lblServiceCoutdownValue.ForeColor = System.Drawing.Color.Green;
+                }
+                else
+                {
+                    aTimer.Stop();
+                    countdownTimer.Stop();
+                    btnServiceRun.Text = "Service run";
+                    lblServiceStatus.Text = "stoped";
+                    lblServiceStatus.ForeColor = System.Drawing.Color.Gray;
+                    lblServiceCoutdownValue.Text = runEvery.ToString();
+                    lblServiceCoutdownValue.ForeColor = System.Drawing.Color.Gray;
+                    this.serviceStatus = false;
+                    this.ChecksServiceRunEvery();
+                    TimeSpan ts = TimeSpan.FromMilliseconds(runEvery);
+                    lblServiceCoutdownValue.Text = String.Format("{0:00}:{1:00}", ts.Minutes, ts.Seconds);
+                }
             }
             else
             {
-                aTimer.Stop();
-                countdownTimer.Stop();
-                archiveWatchDogTimer.Stop();
-                btnServiceRun.Text = "Service run";
-                lblServiceStatus.Text = "stoped";
-                lblServiceStatus.ForeColor = System.Drawing.Color.Gray;
-                lblServiceCoutdownValue.Text = runEvery.ToString();
-                lblServiceCoutdownValue.ForeColor = System.Drawing.Color.Gray;
-                this.serviceStatus = false;
-                this.ChecksServiceRunEvery();
-                TimeSpan ts = TimeSpan.FromMilliseconds(runEvery);
-                lblServiceCoutdownValue.Text = String.Format("{0:00}:{1:00}", ts.Minutes, ts.Seconds);
+                MessageBox.Show(
+                    "Fail for run backup service. Check options.",
+                    "Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
             }
         }
 
@@ -476,7 +533,7 @@ namespace _backuper
 
         private void archiveWatchDogTimer_Tick(object sender, EventArgs e)
         {
-            this.GetLastBackupFile();
+            this.OptionsCheck();
         }
 
         private void CleanUp()

@@ -41,6 +41,7 @@
             this.btnFolders7ZipOpen = new System.Windows.Forms.Button();
             this.lblCheck7Zip = new System.Windows.Forms.Label();
             this.grpLastBackup = new System.Windows.Forms.GroupBox();
+            this.lblBackupSize = new System.Windows.Forms.Label();
             this.lblBackupFilesTotal = new System.Windows.Forms.Label();
             this.lblBackupFileTime = new System.Windows.Forms.Label();
             this.lblBackupFileName = new System.Windows.Forms.Label();
@@ -56,7 +57,6 @@
             this.btnChecksRescan = new System.Windows.Forms.Button();
             this.icnTrayIcon = new System.Windows.Forms.NotifyIcon(this.components);
             this.btnIniOpen = new System.Windows.Forms.Button();
-            this.lblBackupSize = new System.Windows.Forms.Label();
             this.grpChecks.SuspendLayout();
             this.grpLastBackup.SuspendLayout();
             this.grpAsService.SuspendLayout();
@@ -191,6 +191,16 @@
             this.grpLastBackup.TabStop = false;
             this.grpLastBackup.Text = "Last backup";
             // 
+            // lblBackupSize
+            // 
+            this.lblBackupSize.Location = new System.Drawing.Point(95, 66);
+            this.lblBackupSize.Margin = new System.Windows.Forms.Padding(5);
+            this.lblBackupSize.Name = "lblBackupSize";
+            this.lblBackupSize.Size = new System.Drawing.Size(82, 25);
+            this.lblBackupSize.TabIndex = 3;
+            this.lblBackupSize.Text = "Backup size";
+            this.lblBackupSize.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
             // lblBackupFilesTotal
             // 
             this.lblBackupFilesTotal.Location = new System.Drawing.Point(3, 66);
@@ -255,7 +265,7 @@
             this.lblServiceCoutdownStatic.Name = "lblServiceCoutdownStatic";
             this.lblServiceCoutdownStatic.Size = new System.Drawing.Size(125, 25);
             this.lblServiceCoutdownStatic.TabIndex = 5;
-            this.lblServiceCoutdownStatic.Text = "Coutdown";
+            this.lblServiceCoutdownStatic.Text = "Countdown";
             this.lblServiceCoutdownStatic.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // lblServiceRunEveryValue
@@ -342,16 +352,6 @@
             this.btnIniOpen.Text = "⚙";
             this.btnIniOpen.UseVisualStyleBackColor = true;
             this.btnIniOpen.Click += new System.EventHandler(this.btnIniOpen_Click);
-            // 
-            // lblBackupSize
-            // 
-            this.lblBackupSize.Location = new System.Drawing.Point(95, 66);
-            this.lblBackupSize.Margin = new System.Windows.Forms.Padding(5);
-            this.lblBackupSize.Name = "lblBackupSize";
-            this.lblBackupSize.Size = new System.Drawing.Size(82, 25);
-            this.lblBackupSize.TabIndex = 3;
-            this.lblBackupSize.Text = "Backup size";
-            this.lblBackupSize.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // MainForm
             // 
